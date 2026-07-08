@@ -23,7 +23,8 @@ def convert_csv_to_npy(csv_path, npy_path):
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "output": None})
+    # FIX: Explicitly mapped via keyword arguments to avoid positional signature mismatches
+    return templates.TemplateResponse(request=request, name="index.html", context={"output": None})
 
 @app.post("/scan", response_class=HTMLResponse)
 async def scan_matrix(
@@ -45,14 +46,12 @@ async def scan_matrix(
             else:
                 shutil.move(uploaded_path, target_npy_path)
 
-            # CLOUD FIX: Dynamically target Render's active internal Linux Python path
             cmd = [
                 sys.executable, "main.py",
                 "--target", target_npy_path,
                 "--mode", mode
             ]
 
-            # Execute the script and capture the UTF-8 ANSI stream
             result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", check=True)
             raw_output = result.stdout
 
@@ -63,9 +62,11 @@ async def scan_matrix(
 
         html_output = ansi_converter.convert(raw_output, full=False)
 
+        # FIX: Explicitly mapped via keyword arguments to safely route context data
         return templates.TemplateResponse(
-            "index.html", 
-            {"request": request, "output": html_output, "mode": mode, "filename": input_filename}
+            request=request,
+            name="index.html", 
+            context={"output": html_output, "mode": mode, "filename": input_filename}
         )
 
 if __name__ == "__main__":
