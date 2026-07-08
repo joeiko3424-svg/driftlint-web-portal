@@ -1,0 +1,9 @@
+﻿driftlint-action/
+*.npy
+*.csv
+test_biotech_data.py
+jpm_export_script.py
+hft_book_export.py
+Dockerfile
+requirements.txt
+__pycache__/

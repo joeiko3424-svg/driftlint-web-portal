@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oikonomia DriftLint Web Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .ansi2html-content { font-family: 'Courier New', Courier, monospace; color: #f1f1f1; background-color: #0b0f19; padding: 1.5rem; border-radius: 0.5rem; line-height: 1.4; overflow-x: auto; }
+    </style>
+</head>
+<body class="bg-[#0b0f19] text-gray-100 font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- Navbar -->
+    <header class="border-b border-gray-800 px-8 py-4 flex justify-between items-center bg-[#0e1424]">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl font-bold tracking-wider text-cyan-400">OIKONOMIA</span>
+            <span class="text-xs bg-cyan-500/10 text-cyan-400 px-2.5 py-0.5 rounded-full font-mono border border-cyan-500/20">DriftLint v1.0 Enterprise</span>
+        </div>
+        <div class="text-sm text-gray-400 font-mono">Proofs: SSRN ID 11884248</div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-5xl w-full mx-auto p-6 md:p-12 space-y-8">
+        <div class="text-center space-y-3">
+            <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent">
+                Automated Floating-Point Precision Audit
+            </h1>
+            <p class="text-gray-400 max-w-2xl mx-auto text-sm md:text-base">
+                Expose hidden bit-entropy decay, rounding accumulation, and model drift boundaries across enterprise infrastructure pipelines instantly.
+            </p>
+        </div>
+
+        <form action="/scan" method="post" enctype="multipart/form-data" class="space-y-6">
+            <!-- Pipeline Select Toggle -->
+            <div class="bg-[#0e1424] border border-gray-800 rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="w-full">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Select Target Vector Pipeline</label>
+                    <select name="mode" class="w-full bg-[#151f32] border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-cyan-500 text-gray-200">
+                        <option value="finance" {% if mode == 'finance' %}selected{% endif %}>Finance — Valuation Matrices (Monte Carlo VaR / SR 26-2)</option>
+                        <option value="biotech" {% if mode == 'biotech' %}selected{% endif %}>Biotech — Molecular Dynamics & Binding Energy (Ligand Docking)</option>
+                        <option value="climate" {% if mode == 'climate' %}selected{% endif %}>Climate — Atmospheric Fluid Dynamics (Navier-Stokes Grid Flux)</option>
+                        <option value="aerospace" {% if mode == 'aerospace' %}selected{% endif %}>Aerospace — Deep Space Astrodynamics Telemetry</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Interative Upload Zone -->
+            <div id="dropzone" class="border-2 border-dashed border-gray-700 hover:border-cyan-500/50 bg-[#0e1424]/40 rounded-xl p-12 text-center cursor-pointer transition-all relative group">
+                <input type="file" name="file" id="fileInput" class="absolute inset-0 opacity-0 cursor-pointer" required onchange="updateFileInfo()">
+                <div class="space-y-3 pointer-events-none">
+                    <div class="text-3xl text-gray-500 group-hover:text-cyan-400 transition-colors">📥</div>
+                    <p class="text-sm font-medium text-gray-300" id="fileText">
+                        Drag and drop your dataset matrix here, or <span class="text-cyan-400 group-hover:underline">browse files</span>
+                    </p>
+                    <p class="text-xs text-gray-500 font-mono">Supports raw arrays (.npy) or standard spreadsheets (.csv)</p>
+                </div>
+            </div>
+
+            <div class="flex justify-center">
+                <button type="submit" class="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold px-8 py-3 rounded-lg shadow-lg hover:shadow-cyan-500/10 transition-all text-sm tracking-wide">
+                    EXECUTE ISOLATED CORE AUDIT
+                </button>
+            </div>
+        </form>
+
+        <!-- Dynamic Output Pre Box -->
+        {% if output %}
+        <div class="space-y-3">
+            <div class="flex justify-between items-center px-2">
+                <span class="text-xs font-mono text-gray-500">Target Analyzed: <span class="text-gray-300 font-semibold">{{ filename }}</span></span>
+                <span class="flex items-center space-x-1.5 text-xs text-emerald-400 font-mono">
+                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Audit Log Output Success</span>
+                </span>
+            </div>
+            <div class="border border-gray-800 rounded-lg overflow-hidden shadow-2xl">
+                <div class="bg-[#121a2e] px-4 py-2 border-b border-gray-800 flex items-center space-x-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500/70"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500/70"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500/70"></div>
+                    <span class="text-xs font-mono text-gray-400 pl-4">oikonomia_shadow_engine_stdout</span>
+                </div>
+                <pre class="ansi2html-content">{{ output | safe }}</pre>
+            </div>
+        </div>
+        {% endif %}
+    </main>
+
+    <footer class="border-t border-gray-900 px-8 py-4 text-center text-xs text-gray-600 font-mono">
+        &copy; 2026 Oikonomia Platforms Inc. Confidentially Processing Local Environments.
+    </footer>
+
+    <script>
+        function updateFileInfo() {
+            const input = document.getElementById('fileInput');
+            const label = document.getElementById('fileText');
+            if(input.files.length > 0) {
+                label.innerHTML = `Selected File: <span class="text-emerald-400 font-mono font-bold">${input.files[0].name}</span>`;
+                document.getElementById('dropzone').classList.add('border-emerald-500/40', 'bg-emerald-950/5');
+            }
+        }
+    </script>
+</body>
+</html>
