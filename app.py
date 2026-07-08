@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import subprocess
 import tempfile
@@ -44,9 +45,9 @@ async def scan_matrix(
             else:
                 shutil.move(uploaded_path, target_npy_path)
 
-            # CLOUD OPTIMIZATION: Call main.py directly via the native Python environment
+            # CLOUD FIX: Dynamically target Render's active internal Linux Python path
             cmd = [
-                "python", "main.py",
+                sys.executable, "main.py",
                 "--target", target_npy_path,
                 "--mode", mode
             ]
@@ -69,6 +70,5 @@ async def scan_matrix(
 
 if __name__ == "__main__":
     import uvicorn
-    # Configure port to use Render's dynamic environment routing variable
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
